@@ -1,0 +1,14 @@
+# デフォルト設定：すべてのテキストファイルを自動検出し、
+# リポジトリ内では LF (Linux形式) で保存する
+* text=auto
+
+# 特定の拡張子に対して、コミット時に必ず LF に変換することを強制する
+*.rs    text eol=lf
+*.toml  text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf
+
+# バイナリファイル（画像など）は改行コード変換の対象外にする
+*.png   binary
+*.jpg   binary
+*.gif   binary

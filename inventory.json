@@ -1,0 +1,44 @@
+[
+  {
+    "name": "りんご",
+    "price": 150,
+    "stock": 10,
+    "category": "果物"
+  },
+  {
+    "name": "みかん",
+    "price": 100,
+    "stock": 0,
+    "category": "果物"
+  },
+  {
+    "name": "メロン",
+    "price": 200,
+    "stock": 5,
+    "category": "果物"
+  },
+  {
+    "name": "キウイ",
+    "price": 180,
+    "stock": 0,
+    "category": "果物"
+  },
+  {
+    "name": "バナナ",
+    "price": 70,
+    "stock": 20,
+    "category": "果物"
+  },
+  {
+    "name": "コーラ",
+    "price": 65,
+    "stock": 50,
+    "category": "飲み物"
+  },
+  {
+    "name": "洗剤",
+    "price": 250,
+    "stock": 20,
+    "category": "日用品"
+  }
+]

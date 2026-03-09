@@ -40,5 +40,11 @@
     "price": 250,
     "stock": 20,
     "category": "日用品"
+  },
+  {
+    "name": "お茶",
+    "price": 100,
+    "stock": 110,
+    "category": "飲み物"
   }
 ]

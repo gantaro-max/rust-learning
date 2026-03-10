@@ -1,43 +1,16 @@
+mod models;
+mod repositories;
+use crate::models::Item;
+use crate::models::UpdateStockRequest;
+use repositories::item_repository::ItemRepository;
+
 use axum::{
     Json, Router,
     http::StatusCode,
     routing::{delete, get, patch, post},
 };
-use serde::{Deserialize, Serialize};
 use std::fs;
 use tower_http::cors::CorsLayer;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Item {
-    name: String,
-    price: u32,
-    stock: u32,
-    category: Category,
-}
-#[derive(Deserialize)]
-pub struct UpdateStockRequest {
-    name: String,
-    stock: u32,
-}
-#[derive(Debug, Serialize, Deserialize)]
-pub enum Category {
-    #[serde(rename = "果物")]
-    Fruit,
-    #[serde(rename = "飲み物")]
-    Drink,
-    #[serde(rename = "日用品")]
-    DailyNecessity,
-}
-impl Item {
-    pub fn new(name: String, price: u32, stock: u32, category: Category) -> Self {
-        Self {
-            name,
-            price,
-            stock,
-            category,
-        }
-    }
-}
 
 #[tokio::main]
 async fn main() {

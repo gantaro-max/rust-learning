@@ -3,6 +3,7 @@ use sqlx::FromRow;
 use sqlx::Type;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Type)]
+#[sqlx(type_name = "varchar")]
 pub enum Category {
     #[serde(rename = "果物")]
     Fruit,
@@ -32,8 +33,12 @@ impl Item {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateStockRequest {
-    pub name: String,
+    pub id: i32,
     pub stock: i32,
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DeleteRequest {
+    pub id: i32,
 }

@@ -19,15 +19,15 @@ function App() {
 
   },[]);
 
-  const handleDelete = (name:string) => {
+  const handleDelete = (id:number) => {
 
     fetch("http://localhost:8000/api/items",{
       method:"DELETE",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(name)
+      body:JSON.stringify({id: id})
     }).then(response=>{
       if(response.ok){
-        setItems(list => list.filter(item => item.name!=name));
+        setItems(list => list.filter(item => item.id!=id));
       }
     });
   }
@@ -40,8 +40,8 @@ function App() {
       price,
       stock,
       category: category || "果物",
+      onUpdate:handleUpdate,
       onDelete:handleDelete,
-      onUpdate:handleUpdate
     }
 
     fetch("http://localhost:8000/api/items",{
@@ -61,9 +61,9 @@ function App() {
     });
 
   }
-  const handleUpdate =(name:string,newStock:number) =>{
+  const handleUpdate =(id:number,newStock:number) =>{
     const upStock:UpStock = {
-      name,
+      id,
       stock
     }
 
@@ -73,7 +73,7 @@ function App() {
       body:JSON.stringify(upStock)
     }).then(response=>{
       if(response.ok){
-        setItems(list=> list.map(item=> item.name===name ? {...item,stock:newStock}:item
+        setItems(list=> list.map(item=> item.id===id ? {...item,stock:newStock}:item
         ));
         
       }
@@ -93,8 +93,8 @@ function App() {
       <div style={{display:'flex'}}>
         {
           items.map(item => (
-            <div key={item.name}>
-                <Item name={item.name} price={item.price} stock={item.stock} category={item.category} onDelete={(name) => handleDelete(name)} onUpdate={(name,newStock)=>handleUpdate(name,newStock)}/>
+            <div>
+                <Item id={item.id} name={item.name} price={item.price} stock={item.stock} category={item.category} onDelete={(id) => handleDelete(id)} onUpdate={(id,newStock)=>handleUpdate(id,newStock)}/>
               
             </div>
         ))

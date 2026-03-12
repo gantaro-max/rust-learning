@@ -22,15 +22,15 @@ pub struct Item {
     pub category: Category,
 }
 impl Item {
-    pub fn new(name: String, price: i32, stock: i32, category: Category) -> Self {
-        Self {
-            id: None,
-            name,
-            price,
-            stock,
-            category,
-        }
-    }
+    // pub fn new(name: String, price: i32, stock: i32, category: Category) -> Self {
+    //     Self {
+    //         id: None,
+    //         name,
+    //         price,
+    //         stock,
+    //         category,
+    //     }
+    // }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

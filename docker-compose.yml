@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: my-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    
+    restart: unless-stopped
+  
+  backend:
+    build: .
+    container_name: my-rust-app
+    volumes:
+      - .:/app
+      - /app/frontend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgres://postgres:password@db:5432/postgres
+    depends_on:
+      - db
+  frontend:
+    build: ./frontend # 💡 frontend フォルダ内の Dockerfile を使用
+    container_name: my-react-app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # 💡 node_modules はホスト側と同期させない（重要）
+    ports:
+      - "3000:3000"
+    environment:
+      - WDS_SOCKET_PORT=0 # 💡 Docker 上でホットリロードを安定させるための設定
+    depends_on:
+      - backend
+    stdin_open: true # 💡 React の開発サーバーをインタラクティブに保つ
+    tty: true
+
+volumes:
+  postgres_data:
+

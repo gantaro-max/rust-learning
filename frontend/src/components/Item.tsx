@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ItemProps } from "../types";
-const Item = ({name,price,stock,category,onDelete,onUpdate}:ItemProps) => {
+const Item = ({id,name,price,stock,category,onUpdate,onDelete}:ItemProps) => {
 
     const [newStock,setNewStock] = useState<number>(0);
 
@@ -15,7 +15,7 @@ const Item = ({name,price,stock,category,onDelete,onUpdate}:ItemProps) => {
 
     return(
         <>
-            <div style={cardStyle}>
+            <div style={cardStyle} key={id}>
                 <h3>{name}</h3>
                 <p style={{color:"#929"}}>価格:{price}</p>
                 
@@ -23,8 +23,8 @@ const Item = ({name,price,stock,category,onDelete,onUpdate}:ItemProps) => {
                 在庫更新:<input type="number" value={newStock} onChange={(e)=>setNewStock(Number(e.target.value))}/>
                 <p>分類:{category}</p>
             </div>
-            <button onClick={()=>onUpdate(name,newStock)} style={{marginTop: "10px", cursor: "pointer", color: "white", backgroundColor: "#55e", border: "none", borderRadius: "4px", padding: "5px 10px"}}>更新</button>
-            <button onClick={()=>onDelete(name)} style={{marginTop: "10px", cursor: "pointer", color: "white", backgroundColor: "#e55", border: "none", borderRadius: "4px", padding: "5px 10px"}}>削除</button>
+            <button onClick={()=>onUpdate(id!,newStock)} style={{marginTop: "10px", cursor: "pointer", color: "white", backgroundColor: "#55e", border: "none", borderRadius: "4px", padding: "5px 10px"}}>更新</button>
+            <button onClick={()=>onDelete(id!)} style={{marginTop: "10px", cursor: "pointer", color: "white", backgroundColor: "#e55", border: "none", borderRadius: "4px", padding: "5px 10px"}}>削除</button>
         </>
     );
 };

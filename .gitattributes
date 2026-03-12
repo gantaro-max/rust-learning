@@ -2,6 +2,10 @@
 # リポジトリ内では LF (Linux形式) で保存する
 * text=auto
 
+# Dockerやシェルスクリプトは強制的にLFにする
+Dockerfile text eol=lf
+*.sh text eol=lf
+
 # 特定の拡張子に対して、コミット時に必ず LF に変換することを強制する
 *.rs    text eol=lf
 *.toml  text eol=lf

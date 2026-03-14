@@ -9,9 +9,8 @@ ENV SQLX_OFFLINE=true
 
 # ホットリロード（コード変更を検知して再起動）のために cargo-watch をインストール
 RUN cargo install cargo-watch
-RUN cargo install sqlx-cli --no-default-features --features postgres
 
 COPY . .
 
-# 起動コマンド：マイグレーション実行とcargo-watch実行
-CMD ["sh", "-c", "sqlx migrate run && cargo-watch -x run"]
+# 起動コマンド：cargo-watch実行
+CMD ["cargo-watch","-x","run"]

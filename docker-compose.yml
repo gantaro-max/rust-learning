@@ -1,6 +1,11 @@
 services:
   db:
     image: postgres:17
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     container_name: my-postgres
     environment:
       POSTGRES_USER: postgres
@@ -25,7 +30,8 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:password@db:5432/postgres
     depends_on:
-      - db
+      db:
+        condition: service_healthy
   frontend:
     build: ./frontend # 💡 frontend フォルダ内の Dockerfile を使用
     container_name: my-react-app

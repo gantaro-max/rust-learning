@@ -10,4 +10,4 @@ RUN npm install
 # ソースコードは docker-compose でマウントするので COPY は不要（開発用）
 
 # React の開発サーバーを起動
-CMD ["npm", "start"]
+CMD ["npm", "run","dev","--","--host"]

@@ -27,6 +27,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .connect(&database_url)
         .await?;
 
+    sqlx::migrate!("./migrations").run(&pool).await?;
+
     let repository = Arc::new(ItemRepository::new(pool));
 
     let cors = CorsLayer::permissive();

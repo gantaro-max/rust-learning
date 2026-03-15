@@ -23,7 +23,7 @@ const Item = ({id,name,price,stock,category,onUpdate,onDelete}:ItemProps) => {
                 在庫更新:<input type="number" value={newStock} onChange={(e)=>setNewStock(Number(e.target.value))}/>
                 <p>分類:{category}</p>
             </div>
-            <button onClick={()=>onUpdate(id!,newStock)} style={{marginTop: "10px", cursor: "pointer", color: "white", backgroundColor: "#55e", border: "none", borderRadius: "4px", padding: "5px 10px"}}>更新</button>
+            <button onClick={()=>{onUpdate(id!,newStock);setNewStock(0);}} style={{marginTop: "10px", cursor: "pointer", color: "white", backgroundColor: "#55e", border: "none", borderRadius: "4px", padding: "5px 10px"}}>更新</button>
             <button onClick={()=>onDelete(id!)} style={{marginTop: "10px", cursor: "pointer", color: "white", backgroundColor: "#e55", border: "none", borderRadius: "4px", padding: "5px 10px"}}>削除</button>
         </>
     );

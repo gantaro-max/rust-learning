@@ -48,9 +48,10 @@ function App() {
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(newItem)
-    }).then(response=>{
+    }).then(async response=>{
       if(response.ok){
-        setItems(list=> [...list,newItem]);
+        const savedItem = await response.json();
+        setItems(list=> [...list,savedItem]);
         setName("");
         setPrice(0);
         setStock(0);

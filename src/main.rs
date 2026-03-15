@@ -41,9 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_state(repository)
         .layer(cors);
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:8000")
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
     println!("🚀 Webサーバーがポート8000で起動しました! http://localhost:8000");
 
     axum::serve(listener, app).await.unwrap();
@@ -71,15 +69,15 @@ async fn get_items(
 async fn add_items(
     State(repository): State<Arc<ItemRepository>>,
     Json(new_item): Json<Item>,
-) -> Result<StatusCode, (StatusCode, String)> {
-    repository.create(new_item).await.map_err(|e| {
+) -> Result<(StatusCode, Json<Item>), (StatusCode, String)> {
+    let created_item = repository.create(new_item).await.map_err(|e| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             format!("予期せぬエラーが発生しました:{}", e),
         )
     })?;
 
-    Ok(StatusCode::CREATED)
+    Ok((StatusCode::CREATED, Json(created_item)))
 }
 
 async fn update_stock(

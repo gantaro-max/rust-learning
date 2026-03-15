@@ -17,17 +17,18 @@ impl ItemRepository {
             .await
     }
 
-    pub async fn create(&self, item: Item) -> Result<(), sqlx::Error> {
-        sqlx::query!(
-            "INSERT INTO items(name,price,stock,category) VALUES($1,$2,$3,$4)",
+    pub async fn create(&self, item: Item) -> Result<Item, sqlx::Error> {
+        let created_item = sqlx::query_as!(
+            Item,
+            r#"INSERT INTO items(name,price,stock,category) VALUES($1,$2,$3,$4) RETURNING id,name,price,stock,category as "category: _""#,
             item.name,
             item.price,
             item.stock,
             item.category as _
         )
-        .execute(&self.pool)
+        .fetch_one(&self.pool)
         .await?;
-        Ok(())
+        Ok(created_item)
     }
 
     pub async fn update_stock(&self, up_stock: &UpdateStockRequest) -> Result<u64, sqlx::Error> {

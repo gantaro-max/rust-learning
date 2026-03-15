@@ -90,10 +90,10 @@ function App() {
   return (
     <>
       <h1>APIから取得した商品一覧</h1>
-      <div style={{display:'flex'}}>
+      <div style={{display:'flex', flexWrap:'wrap'}}>
         {
           items.map(item => (
-            <div>
+            <div key={item.id}>
                 <Item id={item.id} name={item.name} price={item.price} stock={item.stock} category={item.category} onDelete={(id) => handleDelete(id)} onUpdate={(id,newStock)=>handleUpdate(id,newStock)}/>
               
             </div>

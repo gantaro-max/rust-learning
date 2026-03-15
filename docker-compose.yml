@@ -39,7 +39,7 @@ services:
       - ./frontend:/app
       - /app/node_modules # 💡 node_modules はホスト側と同期させない（重要）
     ports:
-      - "3000:3000"
+      - "13000:5173"
     environment:
       - WDS_SOCKET_PORT=0 # 💡 Docker 上でホットリロードを安定させるための設定
     depends_on:

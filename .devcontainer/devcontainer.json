@@ -1,0 +1,26 @@
+{
+  "name": "Rust Fullstack Dev Environment",
+  // 既存の docker-compose.yml を利用する
+  "dockerComposeFile": "../docker-compose.yml",
+  // VS Code が「乗り込む」対象のサービス名
+  "service": "backend",
+  // コンテナ内での作業ディレクトリ（DockerfileのWORKDIRと合わせる）
+  "workspaceFolder": "/app",
+
+  // コンテナ内でだけ有効にしたい VS Code 拡張機能
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "serayuzgur.crates",
+        "ms-azuretools.vscode-docker",
+        "mtak.sqlx-language-server-vscode"
+      ]
+    }
+  },
+
+  // コンテナが作成された後に1回だけ実行するコマンド
+  // ここで sqlx-cli を入れておけば、ローカルにインストールする必要がなくなります
+  "postCreateCommand": "cargo install sqlx-cli --no-default-features --features postgres"
+}

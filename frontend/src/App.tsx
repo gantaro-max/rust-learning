@@ -66,7 +66,7 @@ function App() {
   const handleUpdate = (id: number, newStock: number) => {
     const upStock: UpStock = {
       id,
-      stock
+      stock: newStock
     }
 
     fetch("http://localhost:8000/api/items", {
@@ -116,7 +116,6 @@ function App() {
             <option value="飲み物">飲み物</option>
             <option value="日用品">日用品</option>
           </select>
-
           <input type="submit" value="登録" disabled={isInvalid} style={{
             background: isInvalid ? "#ccc" : "#4caf50",
             cursor: isInvalid ? "not-allowed" : "pointer",
@@ -125,7 +124,17 @@ function App() {
             border: "none",
             borderRadius: "4px"
           }} />
-
+          <br />
+          {
+            isInvalid && (
+              <p style={{
+                color: "red",
+                fontSize: "0.8rem",
+                marginTop: "10px"
+              }}>※商品名を入力し、価格（1円以上）と在庫（0以上）を正しく設定してください</p>
+            )
+          }
+          <br />
         </form>
       </div>
 

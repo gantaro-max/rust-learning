@@ -6,7 +6,9 @@
   "service": "backend",
   // コンテナ内での作業ディレクトリ（DockerfileのWORKDIRと合わせる）
   "workspaceFolder": "/app",
-
+  "containerEnv": {
+    "LANG": "C.UTF-8"
+  },
   // コンテナ内でだけ有効にしたい VS Code 拡張機能
   "customizations": {
     "vscode": {
@@ -19,7 +21,6 @@
       ]
     }
   },
-
   // コンテナが作成された後に1回だけ実行するコマンド
   // ここで sqlx-cli を入れておけば、ローカルにインストールする必要がなくなります
   "postCreateCommand": "cargo install sqlx-cli --no-default-features --features postgres"

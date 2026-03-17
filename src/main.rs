@@ -1,11 +1,15 @@
 mod models;
 mod repositories;
+mod error;
+mod services;
+use crate::error::AppError;
 use crate::models::DeleteRequest;
 use crate::models::Item;
 use crate::models::UpdateStockRequest;
 use axum::extract::State;
 use dotenvy::dotenv;
 use repositories::item_repository::ItemRepository;
+use services::ItemService;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 use std::sync::Arc;
@@ -16,6 +20,8 @@ use axum::{
     routing::{delete, get, patch, post},
 };
 use tower_http::cors::CorsLayer;
+
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -30,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     sqlx::migrate!("./migrations").run(&pool).await?;
 
     let repository = Arc::new(ItemRepository::new(pool));
-
+    let service=Arc::new(ItemService::new(Arc::clone(&repository)));   
     let cors = CorsLayer::permissive();
     let app = Router::new()
         .route("/", get(hello))
@@ -38,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/api/items", post(add_items))
         .route("/api/items", patch(update_stock))
         .route("/api/items", delete(delete_item))
-        .with_state(repository)
+        .with_state(service)
         .layer(cors);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
@@ -53,70 +59,43 @@ async fn hello() -> &'static str {
 }
 
 async fn get_items(
-    State(repository): State<Arc<ItemRepository>>,
-) -> Result<Json<Vec<Item>>, (StatusCode, String)> {
-    let items = repository.fetch_all().await.map_err(|e| match e {
-        sqlx::Error::RowNotFound => (StatusCode::NOT_FOUND, format!("見つかりませんでした:{}", e)),
-        _ => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("予期せぬエラーが発生しました:{}", e),
-        ),
-    })?;
+    State(service): State<Arc<ItemService>>,
+) -> Result<Json<Vec<Item>>, AppError> {
+    let items = service.get_items().await?;
 
     Ok(Json(items))
 }
 
 async fn add_items(
-    State(repository): State<Arc<ItemRepository>>,
+    State(service): State<Arc<ItemService>>,
     Json(new_item): Json<Item>,
-) -> Result<(StatusCode, Json<Item>), (StatusCode, String)> {
-    let created_item = repository.create(new_item).await.map_err(|e| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("予期せぬエラーが発生しました:{}", e),
-        )
-    })?;
+) -> Result<(StatusCode, Json<Item>),AppError> {
+    let created_item = service.add_items(new_item).await?;
 
     Ok((StatusCode::CREATED, Json(created_item)))
 }
 
 async fn update_stock(
-    State(repository): State<Arc<ItemRepository>>,
+    State(service): State<Arc<ItemService>>,
     Json(up_req): Json<UpdateStockRequest>,
-) -> Result<StatusCode, (StatusCode, String)> {
-    let rows = repository.update_stock(&up_req).await.map_err(|e| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("予期せぬエラーが発生しました:{}", e),
-        )
-    })?;
+) -> Result<StatusCode, AppError> {
+    let rows = service.update_stock(&up_req).await?;
 
     if rows == 0 {
-        return Err((
-            StatusCode::NOT_FOUND,
-            format!("見つかりませんでした id:{}", up_req.id),
-        ));
+        return Err(AppError::NotFound);
     }
 
     Ok(StatusCode::OK)
 }
 
 async fn delete_item(
-    State(repository): State<Arc<ItemRepository>>,
+    State(service): State<Arc<ItemService>>,
     Json(del_req): Json<DeleteRequest>,
-) -> Result<StatusCode, (StatusCode, String)> {
-    let rows = repository.delete(&del_req).await.map_err(|e| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("予期せぬエラーが発生しました:{}", e),
-        )
-    })?;
+) -> Result<StatusCode, AppError> {
+    let rows = service.delete_item(&del_req).await?;
 
     if rows == 0 {
-        return Err((
-            StatusCode::NOT_FOUND,
-            format!("見つかりませんでした id:{}", del_req.id),
-        ));
+        return Err(AppError::NotFound);
     }
 
     Ok(StatusCode::OK)

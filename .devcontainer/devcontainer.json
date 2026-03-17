@@ -7,10 +7,10 @@
   // コンテナ内での作業ディレクトリ（DockerfileのWORKDIRと合わせる）
   "workspaceFolder": "/app",
   "containerEnv": {
-    "LANG": "ja_JP.UTF-8"
+    "LANG": "C.UTF-8"
   },
   "remoteEnv": {
-    "LANG": "ja_JP.UTF-8"
+    "LANG": "C.UTF-8"
   },
   // コンテナ内でだけ有効にしたい VS Code 拡張機能
   "customizations": {
@@ -23,6 +23,6 @@
         "mtak.sqlx-language-server-vscode"
       ]
     }
-  },
-  "postCreateCommand": "cargo install sqlx-cli --no-default-features --features postgres"
+  }
+  // "postCreateCommand": "cargo install sqlx-cli --no-default-features --features postgres"
 }

@@ -6,6 +6,7 @@ use crate::error::AppError;
 use crate::models::DeleteRequest;
 use crate::models::Item;
 use crate::models::UpdateStockRequest;
+use crate::repositories::item_repository::ItemRepositoryTrait;
 use axum::extract::State;
 use dotenvy::dotenv;
 use repositories::item_repository::ItemRepository;
@@ -35,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     sqlx::migrate!("./migrations").run(&pool).await?;
 
-    let repository = Arc::new(ItemRepository::new(pool));
+    let repository: Arc<dyn ItemRepositoryTrait> = Arc::new(ItemRepository::new(pool));
     let service=Arc::new(ItemService::new(Arc::clone(&repository)));   
     let cors = CorsLayer::permissive();
     let app = Router::new()

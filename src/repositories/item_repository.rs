@@ -1,23 +1,38 @@
+use crate::error::AppError;
 use crate::models::DeleteRequest;
 use crate::models::Item;
 use crate::models::UpdateStockRequest;
 use sqlx::PgPool;
+use async_trait::async_trait;
+
+#[async_trait]
+pub trait ItemRepositoryTrait: Send + Sync {
+    async fn create(&self,item:Item)->Result<Item,AppError>;
+    async fn fetch_all(&self)->Result<Vec<Item>,AppError>;
+    async fn update_stock(&self,up_req:&UpdateStockRequest)->Result<u64,AppError>;
+    async fn delete(&self,del_req:&DeleteRequest)->Result<u64,AppError>;
+}
 
 pub struct ItemRepository {
     pool: PgPool,
 }
-impl ItemRepository {
+impl ItemRepository{
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
     }
+}
 
-    pub async fn fetch_all(&self) -> Result<Vec<Item>, sqlx::Error> {
-        sqlx::query_as::<_, Item>("SELECT id,name,price,stock,category FROM items")
+#[async_trait]
+impl ItemRepositoryTrait for  ItemRepository {    
+    async fn fetch_all(&self) -> Result<Vec<Item>, AppError> {
+        let items = sqlx::query_as::<_, Item>("SELECT id,name,price,stock,category FROM items")
             .fetch_all(&self.pool)
-            .await
+            .await?;
+
+        Ok(items)
     }
 
-    pub async fn create(&self, item: Item) -> Result<Item, sqlx::Error> {
+    async fn create(&self, item: Item) -> Result<Item, AppError> {
         let created_item = sqlx::query_as!(
             Item,
             r#"INSERT INTO items(name,price,stock,category) VALUES($1,$2,$3,$4) RETURNING id,name,price,stock,category as "category: _""#,
@@ -31,7 +46,7 @@ impl ItemRepository {
         Ok(created_item)
     }
 
-    pub async fn update_stock(&self, up_stock: &UpdateStockRequest) -> Result<u64, sqlx::Error> {
+    async fn update_stock(&self, up_stock: &UpdateStockRequest) -> Result<u64, AppError> {
         let result = sqlx::query!(
             "UPDATE items SET stock=$1 WHERE id=$2",
             up_stock.stock,
@@ -42,7 +57,7 @@ impl ItemRepository {
         Ok(result.rows_affected())
     }
 
-    pub async fn delete(&self, del_req: &DeleteRequest) -> Result<u64, sqlx::Error> {
+    async fn delete(&self, del_req: &DeleteRequest) -> Result<u64, AppError> {
         let result = sqlx::query!("DELETE FROM items WHERE id=$1", &del_req.id)
             .execute(&self.pool)
             .await?;

@@ -11,6 +11,7 @@ function App() {
   const [price, setPrice] = useState<number>(0);
   const [stock, setStock] = useState<number>(0);
   const [category, setCategory] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isInvalid = name.trim() === "" || price <= 0 || stock < 0;
 
   useEffect(() => {
@@ -21,20 +22,26 @@ function App() {
   }, []);
 
   const handleDelete = (id: number) => {
+    setErrorMessage(null);
 
     fetch("http://localhost:8000/api/items", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: id })
-    }).then(response => {
+    }).then(async response => {
       if (response.ok) {
         setItems(list => list.filter(item => item.id != id));
+      }
+      else {
+        const errorData = await response.json();
+        setErrorMessage(errorData.error);
       }
     });
   }
 
   const handleRegister = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrorMessage(null);
 
     const newItem: ItemProps = {
       name,
@@ -58,12 +65,15 @@ function App() {
         setStock(0);
       }
       else {
-        alert("登録に失敗しました");
+        const errorData = await response.json();
+        setErrorMessage(errorData.error);
+        // alert("登録に失敗しました");
       }
     });
 
   }
   const handleUpdate = (id: number, newStock: number) => {
+    setErrorMessage(null);
     const upStock: UpStock = {
       id,
       stock: newStock
@@ -73,14 +83,16 @@ function App() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(upStock)
-    }).then(response => {
+    }).then(async response => {
       if (response.ok) {
         setItems(list => list.map(item => item.id === id ? { ...item, stock: newStock } : item
         ));
 
       }
       else {
-        alert("登録に失敗しました");
+        const errorData = await response.json();
+        setErrorMessage(errorData.error);
+        // alert("登録に失敗しました");
       }
     });
 
@@ -133,6 +145,12 @@ function App() {
                 marginTop: "10px"
               }}>※商品名を入力し、価格（1円以上）と在庫（0以上）を正しく設定してください</p>
             )
+          }
+          {
+            errorMessage && (
+              <div style={{ color: "red", backgroundColor: "#ffebee", padding: "10px", marginBottom: "10px", borderRadius: "4px" }}>
+                ⚠️ {errorMessage}
+              </div>)
           }
           <br />
         </form>

@@ -33,12 +33,12 @@ impl Item {
     // }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UpdateStockRequest {
     pub id: i32,
     pub stock: i32,
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DeleteRequest {
     pub id: i32,
 }

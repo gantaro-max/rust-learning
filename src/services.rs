@@ -212,4 +212,22 @@ mod tests {
             _ => panic!("404エラーを期待していましたが違いました"),
         }
     }
+    #[tokio::test]
+    async fn test_delete_notfound(){
+        let mock_del = DeleteRequest{id:1};
+        let mock_repo = Arc::new(MockRepository{
+            items:vec![],
+            error_type:None,
+            affected_row:0,
+        });
+        let service = ItemService::new(mock_repo);
+
+        let result = service.delete_item(&mock_del).await;
+
+        assert!(result.is_err());
+        match result {
+            Err(AppError::NotFound)=>(),
+            _=> panic!("404エラーを期待していましたが違いました"),            
+        }
+    }
 }

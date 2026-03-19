@@ -55,41 +55,7 @@ impl ItemService {
 mod tests {
     use super::*;
     use crate::models::{Category, DeleteRequest, Item, UpdateStockRequest};
-    use async_trait::async_trait;
-
-    struct MockRepository {
-        items: Vec<Item>,
-        error_type: Option<AppError>,
-        affected_row: u64,
-    }
-
-    #[async_trait]
-    impl ItemRepositoryTrait for MockRepository {
-        async fn create(&self, item: Item) -> Result<Item, AppError> {
-            if let Some(err) = &self.error_type {
-                return Err(err.clone());
-            }
-            Ok(item)
-        }
-        async fn fetch_all(&self) -> Result<Vec<Item>, AppError> {
-            if let Some(err) = &self.error_type {
-                return Err(err.clone());
-            }
-            Ok(self.items.clone())
-        }
-        async fn update_stock(&self, _up_req: &UpdateStockRequest) -> Result<u64, AppError> {
-            if let Some(err) = &self.error_type {
-                return Err(err.clone());
-            }
-            Ok(self.affected_row)
-        }
-        async fn delete(&self, _del_req: &DeleteRequest) -> Result<u64, AppError> {
-            if let Some(err) = &self.error_type {
-                return Err(err.clone());
-            }
-            Ok(self.affected_row)
-        }
-    }
+    use crate::repositories::item_repository::MockRepository;
 
     #[tokio::test]
     async fn test_add_item_ok() {
@@ -213,12 +179,12 @@ mod tests {
         }
     }
     #[tokio::test]
-    async fn test_delete_notfound(){
-        let mock_del = DeleteRequest{id:1};
-        let mock_repo = Arc::new(MockRepository{
-            items:vec![],
-            error_type:None,
-            affected_row:0,
+    async fn test_delete_notfound() {
+        let mock_del = DeleteRequest { id: 1 };
+        let mock_repo = Arc::new(MockRepository {
+            items: vec![],
+            error_type: None,
+            affected_row: 0,
         });
         let service = ItemService::new(mock_repo);
 
@@ -226,8 +192,8 @@ mod tests {
 
         assert!(result.is_err());
         match result {
-            Err(AppError::NotFound)=>(),
-            _=> panic!("404エラーを期待していましたが違いました"),            
+            Err(AppError::NotFound) => (),
+            _ => panic!("404エラーを期待していましたが違いました"),
         }
     }
 }

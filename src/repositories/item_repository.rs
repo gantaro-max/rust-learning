@@ -98,3 +98,84 @@ impl ItemRepositoryTrait for ItemRepository {
         Ok(result.rows_affected())
     }
 }
+
+#[cfg(test)]
+mod real_db_tests{
+    use super::*;
+    use crate::models::{Item,Category,UpdateStockRequest,DeleteRequest};
+    use sqlx::PgPool;
+
+    #[sqlx::test]
+    async fn test_create_and_fetch_all_real(pool:PgPool)->Result<(),AppError>{
+        let repo = ItemRepository::new(pool);
+        let new_item = Item{
+            id:None,
+            name:"てすとりんご".to_string(),
+            price:100,
+            stock:10,
+            category:Category::Fruit,
+        };
+        let created = repo.create(new_item).await?;
+        assert!(created.id.is_some());
+        assert_eq!(created.name,"てすとりんご");
+
+        let items = repo.fetch_all().await?;
+        assert!(!items.is_empty());
+        assert!(items.iter().any(|item|item.name=="てすとりんご"));
+
+        Ok(())
+    }
+
+    #[sqlx::test]
+    async fn test_update_stock_real(pool:PgPool)->Result<(),AppError>{
+        let repo = ItemRepository::new(pool);
+        let new_item = Item{
+            id:None,
+            name:"更新りんご".to_string(),
+            price:100,
+            stock:10,
+            category:Category::Fruit,
+        };
+        let created = repo.create(new_item).await?;
+        let up_req = UpdateStockRequest{
+            id: created.id.unwrap(),
+            stock:20,
+        };
+
+        let rows = repo.update_stock(&up_req).await?;
+
+        assert_eq!(rows,1);
+        let items = repo.fetch_all().await?;
+
+        let result_item = items.iter().find(|item| item.id==created.id).unwrap();
+
+        assert_eq!(result_item.name,"更新りんご");
+        assert_eq!(result_item.stock, 20);    
+
+        Ok(())
+    }
+
+    #[sqlx::test]
+    async fn test_delete_real(pool:PgPool) -> Result<(),AppError>{
+        let repo =ItemRepository::new(pool);
+        let new_item = Item{
+            id:None,
+            name:"削除りんご".to_string(),
+            price:100,
+            stock:10,
+            category:Category::Fruit,
+        };
+        let created = repo.create(new_item).await?;
+        let del_req = DeleteRequest{
+            id: created.id.unwrap(),          
+        };
+        let rows = repo.delete(&del_req).await?;
+        assert_eq!(rows,1);
+
+        let items = repo.fetch_all().await?;
+
+        assert!(items.is_empty());
+        Ok(())
+    }
+
+}

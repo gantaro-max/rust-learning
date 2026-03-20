@@ -55,10 +55,11 @@ impl ItemService {
 mod tests {
     use super::*;
     use crate::models::{Category, DeleteRequest, Item, UpdateStockRequest};
-    use crate::repositories::item_repository::MockRepository;
+    use crate::repositories::item_repository::MockRepository;    
+    use std::error::Error;
 
     #[tokio::test]
-    async fn test_add_item_ok() {
+    async fn test_add_item_ok()->Result<(),Box<dyn Error>> {
         let mock_item = Item {
             id: None,
             name: "モック".to_string(),
@@ -74,16 +75,18 @@ mod tests {
         });
         let service = ItemService::new(mock_repo);
 
-        let result = service.add_items(mock_item).await.unwrap();
+        let result = service.add_items(mock_item).await?;
 
         assert_eq!(result.name, "モック");
         assert_eq!(result.price, 100);
         assert_eq!(result.stock, 10);
         assert_eq!(result.category, Category::Fruit);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_add_item_empty_name() {
+    async fn test_add_item_empty_name(){
         let invalid_item = Item {
             id: None,
             name: "".to_string(),
@@ -106,6 +109,8 @@ mod tests {
             Err(AppError::BadRequest(_)) => (),
             _ => panic!("400エラーを期待していましたが違いました"),
         }
+
+        
     }
 
     #[tokio::test]
@@ -127,7 +132,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_update_stock_ok() {
+    async fn test_update_stock_ok() -> Result<(),Box<dyn Error>>{
         let mock_up = UpdateStockRequest { id: 1, stock: 10 };
 
         let mock_repo = Arc::new(MockRepository {
@@ -137,9 +142,11 @@ mod tests {
         });
         let service = ItemService::new(mock_repo);
 
-        let result = service.update_stock(&mock_up).await.unwrap();
+        let result = service.update_stock(&mock_up).await?;
 
         assert_eq!(result, 1);
+
+        Ok(())
     }
 
     #[tokio::test]

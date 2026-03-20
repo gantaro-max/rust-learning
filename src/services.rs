@@ -49,6 +49,15 @@ impl ItemService {
 
         Ok(rows)
     }
+        
+    pub async fn find_by_name(&self,name:&str)->Result<Vec<Item>,AppError>{
+        let items = self.repository.find_by_name(name).await?;
+        if items.is_empty(){
+            return Err(AppError::NotFound);
+        }
+
+        Ok(items)
+    }
 }
 
 #[cfg(test)]
@@ -202,5 +211,46 @@ mod tests {
             Err(AppError::NotFound) => (),
             _ => panic!("404エラーを期待していましたが違いました"),
         }
+    }
+
+    #[tokio::test]
+    async fn test_find_by_name_ok() ->Result<(),Box<dyn Error>>{
+        let mock_item = Item {
+            id: Some(1),
+            name: "モック".to_string(),
+            price: 100,
+            stock: 10,
+            category: Category::Fruit,
+        };
+        let mock_repo = Arc::new(MockRepository {
+            items: vec![mock_item],
+            error_type: None,
+            affected_row: 1,
+        });
+        let service = ItemService::new(mock_repo);
+
+        let result = service.find_by_name("モ").await?;
+
+        assert!(result.iter().any(|item| item.name=="モック"));
+
+        Ok(())        
+    }
+
+    #[tokio::test]
+    async fn test_find_by_name_notfound() {        
+        let mock_repo = Arc::new(MockRepository {
+            items: vec![],
+            error_type: Some(AppError::NotFound),
+            affected_row: 1,
+        });
+        let service = ItemService::new(mock_repo);
+
+        let result = service.find_by_name("モ").await;
+
+        assert!(result.is_err());
+        match result {
+            Err(AppError::NotFound) => (),
+            _ => panic!("404エラーを期待していましたが違いました"),
+        }       
     }
 }

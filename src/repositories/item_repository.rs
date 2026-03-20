@@ -11,6 +11,7 @@ pub trait ItemRepositoryTrait: Send + Sync {
     async fn fetch_all(&self) -> Result<Vec<Item>, AppError>;
     async fn update_stock(&self, up_req: &UpdateStockRequest) -> Result<u64, AppError>;
     async fn delete(&self, del_req: &DeleteRequest) -> Result<u64, AppError>;
+    async fn find_by_name(&self,name:&str)->Result<Vec<Item>,AppError>;
 }
 #[cfg(test)]
 pub struct MockRepository {
@@ -45,6 +46,16 @@ impl ItemRepositoryTrait for MockRepository {
         }
         Ok(self.affected_row)
     }
+
+    async fn find_by_name(&self,_name:&str)->Result<Vec<Item>,AppError>{
+        if let Some(err) = &self.error_type {
+            return Err(err.clone());
+        }        
+
+        Ok(self.items.clone())
+    }
+
+    
 }
 
 pub struct ItemRepository {
@@ -97,6 +108,13 @@ impl ItemRepositoryTrait for ItemRepository {
             .await?;
         Ok(result.rows_affected())
     }
+
+    async fn find_by_name(&self,name:&str)->Result<Vec<Item>,AppError>{
+        let result = sqlx::query_as::<_,Item>("SELECT * FROM items WHERE name LIKE $1").bind(format!("%{}%",name)).fetch_all(&self.pool).await?;
+        Ok(result)
+    }
+
+    
 }
 
 #[cfg(test)]
@@ -175,6 +193,34 @@ mod real_db_tests{
         let items = repo.fetch_all().await?;
 
         assert!(items.is_empty());
+        Ok(())
+    }
+
+    #[sqlx::test]
+    async fn test_find_by_name_real(pool:PgPool)->Result<(),AppError>{
+        let repo =ItemRepository::new(pool);
+        let new_item = Item{
+            id:None,
+            name:"検索りんご".to_string(),
+            price:100,
+            stock:10,
+            category:Category::Fruit,
+        };
+        let test_item = Item{
+            id:None,
+            name:"他のりんご".to_string(),
+            price:100,
+            stock:10,
+            category:Category::Fruit,
+        };
+        repo.create(new_item).await?;
+        repo.create(test_item).await?;
+
+        let find_item = repo.find_by_name("検索").await?;
+
+        assert_eq!(find_item.len(),1);
+        assert_eq!(find_item[0].name,"検索りんご");
+
         Ok(())
     }
 

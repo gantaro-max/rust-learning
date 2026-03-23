@@ -2,7 +2,7 @@ use crate::error::AppError;
 use crate::models::DeleteRequest;
 use crate::models::Item;
 use crate::models::UpdateStockRequest;
-use crate::services::ItemService;
+use crate::services::item_service::ItemService;
 use axum::{Json, extract::Query, extract::State, http::StatusCode};
 use serde::Deserialize;
 use std::sync::Arc;

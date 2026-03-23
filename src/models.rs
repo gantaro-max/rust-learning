@@ -21,17 +21,6 @@ pub struct Item {
     pub stock: i32,
     pub category: Category,
 }
-impl Item {
-    // pub fn new(name: String, price: i32, stock: i32, category: Category) -> Self {
-    //     Self {
-    //         id: None,
-    //         name,
-    //         price,
-    //         stock,
-    //         category,
-    //     }
-    // }
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UpdateStockRequest {
@@ -41,4 +30,36 @@ pub struct UpdateStockRequest {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DeleteRequest {
     pub id: i32,
+}
+
+#[derive(Debug, Deserialize, FromRow, Clone)]
+pub struct Users {
+    pub id: i32,
+    pub user_id: String,
+    pub user_name: String,
+    pub password_hash: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct UserRequest {
+    pub user_id: String,
+    pub user_name: String,
+    pub password: String,
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct UserResponse {
+    pub id: i32,
+    pub user_id: String,
+    pub user_name: String,
+}
+
+impl From<Users> for UserResponse {
+    fn from(user: Users) -> Self {
+        Self {
+            id: user.id,
+            user_id: user.user_id,
+            user_name: user.user_name,
+        }
+    }
 }

@@ -8,3 +8,11 @@ CREATE TABLE items (
     category VARCHAR(100) NOT NULL,   -- 分類
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP -- 作成日時
 );
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL UNIQUE,
+    user_name VARCHAR(100) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);

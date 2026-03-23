@@ -4,9 +4,9 @@ mod models;
 mod repositories;
 mod services;
 use crate::repositories::item_repository::ItemRepositoryTrait;
+use crate::services::item_service::ItemService;
 use dotenvy::dotenv;
 use repositories::item_repository::ItemRepository;
-use services::ItemService;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 use std::sync::Arc;
@@ -33,11 +33,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let service = Arc::new(ItemService::new(Arc::clone(&repository)));
     let cors = CorsLayer::permissive();
     let app = Router::new()
-        .route("/api/items", get(handlers::get_items))
-        .route("/api/items", post(handlers::add_items))
-        .route("/api/items", patch(handlers::update_stock))
-        .route("/api/items", delete(handlers::delete_item))
-        .route("/api/items/search", get(handlers::find_by_name))
+        .route("/api/items", get(handlers::item_handler::get_items))
+        .route("/api/items", post(handlers::item_handler::add_items))
+        .route("/api/items", patch(handlers::item_handler::update_stock))
+        .route("/api/items", delete(handlers::item_handler::delete_item))
+        .route(
+            "/api/items/search",
+            get(handlers::item_handler::find_by_name),
+        )
         .with_state(service)
         .layer(cors);
 

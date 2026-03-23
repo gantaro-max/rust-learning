@@ -37,6 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/api/items", post(handlers::add_items))
         .route("/api/items", patch(handlers::update_stock))
         .route("/api/items", delete(handlers::delete_item))
+        .route("/api/items/search", get(handlers::find_by_name))
         .with_state(service)
         .layer(cors);
 

@@ -49,10 +49,16 @@ impl ItemService {
 
         Ok(rows)
     }
-        
-    pub async fn find_by_name(&self,name:&str)->Result<Vec<Item>,AppError>{
+
+    pub async fn find_by_name(&self, name: &str) -> Result<Vec<Item>, AppError> {
+        if name.trim().is_empty() {
+            return Err(AppError::BadRequest(
+                "検索キーワードを入力してください".to_string(),
+            ));
+        }
+
         let items = self.repository.find_by_name(name).await?;
-        if items.is_empty(){
+        if items.is_empty() {
             return Err(AppError::NotFound);
         }
 
@@ -64,11 +70,11 @@ impl ItemService {
 mod tests {
     use super::*;
     use crate::models::{Category, DeleteRequest, Item, UpdateStockRequest};
-    use crate::repositories::item_repository::MockRepository;    
+    use crate::repositories::item_repository::MockRepository;
     use std::error::Error;
 
     #[tokio::test]
-    async fn test_add_item_ok()->Result<(),Box<dyn Error>> {
+    async fn test_add_item_ok() -> Result<(), Box<dyn Error>> {
         let mock_item = Item {
             id: None,
             name: "モック".to_string(),
@@ -95,7 +101,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_add_item_empty_name(){
+    async fn test_add_item_empty_name() {
         let invalid_item = Item {
             id: None,
             name: "".to_string(),
@@ -118,8 +124,6 @@ mod tests {
             Err(AppError::BadRequest(_)) => (),
             _ => panic!("400エラーを期待していましたが違いました"),
         }
-
-        
     }
 
     #[tokio::test]
@@ -141,7 +145,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_update_stock_ok() -> Result<(),Box<dyn Error>>{
+    async fn test_update_stock_ok() -> Result<(), Box<dyn Error>> {
         let mock_up = UpdateStockRequest { id: 1, stock: 10 };
 
         let mock_repo = Arc::new(MockRepository {
@@ -214,7 +218,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_find_by_name_ok() ->Result<(),Box<dyn Error>>{
+    async fn test_find_by_name_ok() -> Result<(), Box<dyn Error>> {
         let mock_item = Item {
             id: Some(1),
             name: "モック".to_string(),
@@ -231,13 +235,13 @@ mod tests {
 
         let result = service.find_by_name("モ").await?;
 
-        assert!(result.iter().any(|item| item.name=="モック"));
+        assert!(result.iter().any(|item| item.name == "モック"));
 
-        Ok(())        
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_find_by_name_notfound() {        
+    async fn test_find_by_name_notfound() {
         let mock_repo = Arc::new(MockRepository {
             items: vec![],
             error_type: Some(AppError::NotFound),
@@ -251,6 +255,24 @@ mod tests {
         match result {
             Err(AppError::NotFound) => (),
             _ => panic!("404エラーを期待していましたが違いました"),
-        }       
+        }
+    }
+
+    #[tokio::test]
+    async fn test_find_by_name_empty() {
+        let mock_repo = Arc::new(MockRepository {
+            items: vec![],
+            error_type: None,
+            affected_row: 1,
+        });
+        let service = ItemService::new(mock_repo);
+
+        let result = service.find_by_name(" ").await;
+
+        assert!(result.is_err());
+        match result {
+            Err(AppError::BadRequest(msg)) => assert_eq!(msg, "検索キーワードを入力してください"),
+            _ => panic!("400エラーを期待していましたが違いました"),
+        }
     }
 }

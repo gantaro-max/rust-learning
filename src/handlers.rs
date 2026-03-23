@@ -3,8 +3,14 @@ use crate::models::DeleteRequest;
 use crate::models::Item;
 use crate::models::UpdateStockRequest;
 use crate::services::ItemService;
-use axum::{Json, extract::State, http::StatusCode};
+use axum::{Json, extract::Query, extract::State, http::StatusCode};
+use serde::Deserialize;
 use std::sync::Arc;
+
+#[derive(Deserialize)]
+pub struct SearchParams {
+    pub name: String,
+}
 
 pub async fn get_items(
     State(service): State<Arc<ItemService>>,
@@ -41,11 +47,24 @@ pub async fn delete_item(
     Ok(StatusCode::OK)
 }
 
+pub async fn find_by_name(
+    State(service): State<Arc<ItemService>>,
+    Query(params): Query<SearchParams>,
+) -> Result<Json<Vec<Item>>, AppError> {
+    let items = service.find_by_name(&params.name).await?;
+
+    Ok(Json(items))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{models::Category, repositories::item_repository::MockRepository};
-    use axum::{body, extract::State, response::IntoResponse};
+    use axum::{
+        body,
+        extract::{Query, State},
+        response::IntoResponse,
+    };
 
     #[tokio::test]
     async fn test_get_items_handler_ok() {
@@ -288,5 +307,82 @@ mod tests {
             .into_response();
 
         assert_eq!(response.status(), StatusCode::OK);
+    }
+    #[tokio::test]
+    async fn test_find_by_name_ok() {
+        let mock_item = Item {
+            id: Some(1),
+            name: "モックハンドラ".to_string(),
+            price: 200,
+            stock: 100,
+            category: Category::DailyNecessity,
+        };
+        let mock_repo = Arc::new(MockRepository {
+            items: vec![mock_item],
+            error_type: None,
+            affected_row: 1,
+        });
+
+        let service = Arc::new(ItemService::new(mock_repo));
+
+        let mock_name = SearchParams {
+            name: "モック".to_string(),
+        };
+
+        let response = find_by_name(State(service), Query(mock_name))
+            .await
+            .into_response();
+
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body_bytes = body::to_bytes(response.into_body(), 1024 * 1024)
+            .await
+            .unwrap();
+        let body_item: Vec<Item> = serde_json::from_slice(&body_bytes).unwrap();
+
+        assert_eq!(body_item.len(), 1);
+        assert_eq!(body_item[0].name, "モックハンドラ");
+    }
+
+    #[tokio::test]
+    async fn test_find_by_name_badrequest() {
+        let mock_repo = Arc::new(MockRepository {
+            items: vec![],
+            error_type: None,
+            affected_row: 1,
+        });
+
+        let service = Arc::new(ItemService::new(mock_repo));
+
+        let mock_name = SearchParams {
+            name: "  ".to_string(),
+        };
+
+        let response = find_by_name(State(service), Query(mock_name))
+            .await
+            .into_response();
+
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[tokio::test]
+    async fn test_find_by_name_notfound() {
+        let mock_repo = Arc::new(MockRepository {
+            items: vec![],
+            error_type: None,
+            affected_row: 1,
+        });
+
+        let service = Arc::new(ItemService::new(mock_repo));
+
+        let mock_name = SearchParams {
+            name: "該当なし".to_string(),
+        };
+
+        let response = find_by_name(State(service), Query(mock_name))
+            .await
+            .into_response();
+
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 }

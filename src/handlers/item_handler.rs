@@ -2,7 +2,6 @@ use crate::error::AppError;
 use crate::models::DeleteRequest;
 use crate::models::Item;
 use crate::models::UpdateStockRequest;
-use crate::services::item_service::ItemService;
 use crate::state::AppStates;
 use axum::{
     Json, Router,
@@ -77,7 +76,9 @@ mod tests {
         models::Category,
         repositories::{item_repository::MockItemRepository, user_repository::MockUserRepository},
         services::user_service::UserService,
+        services::item_service::ItemService,
         state::AppStates,
+
     };
     use axum::{
         body,
@@ -99,14 +100,9 @@ mod tests {
             error_type: None,
             affected_row: 1,
         });
-        let service = Arc::new(ItemService::new(mock_repo));
-        let state = AppStates {
-            item_service: service,
-            user_service: Arc::new(UserService::new(Arc::new(MockUserRepository {
-                users: vec![],
-                error_type: None,
-            }))),
-        };
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
+        let state =Arc::new(AppStates { item_service, user_service });            
 
         let response = get_items(State(state)).await.into_response();
 
@@ -128,9 +124,12 @@ mod tests {
             error_type: Some(AppError::InternalServerError("DB接続エラー".to_string())),
             affected_row: 1,
         });
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
-        let response = get_items(State(service)).await.into_response();
+        let state = Arc::new(AppStates{item_service,user_service});
+
+        let response = get_items(State(state)).await.into_response();
 
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
     }
@@ -151,9 +150,12 @@ mod tests {
             affected_row: 1,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
-        let response = add_items(State(service), Json(mock_item))
+        let state = Arc::new(AppStates{item_service,user_service});
+
+        let response = add_items(State(state), Json(mock_item))
             .await
             .into_response();
 
@@ -176,9 +178,12 @@ mod tests {
             affected_row: 1,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
-        let response = add_items(State(service), Json(mock_item))
+        let state = Arc::new(AppStates{item_service,user_service});
+
+        let response = add_items(State(state), Json(mock_item))
             .await
             .into_response();
 
@@ -201,9 +206,12 @@ mod tests {
             affected_row: 1,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
-        let response = add_items(State(service), Json(mock_item))
+        let state = Arc::new(AppStates{item_service,user_service});
+
+        let response = add_items(State(state), Json(mock_item))
             .await
             .into_response();
 
@@ -218,9 +226,12 @@ mod tests {
             affected_row: 1,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
-        let response = update_stock(State(service), Json(mock_up))
+        let state = Arc::new(AppStates{item_service,user_service});
+
+        let response = update_stock(State(state), Json(mock_up))
             .await
             .into_response();
 
@@ -236,9 +247,12 @@ mod tests {
             affected_row: 0,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
-        let response = update_stock(State(service), Json(mock_up))
+        let state = Arc::new(AppStates{item_service,user_service});
+
+        let response = update_stock(State(state), Json(mock_up))
             .await
             .into_response();
 
@@ -254,9 +268,11 @@ mod tests {
             affected_row: 1,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
-        let response = update_stock(State(service), Json(mock_up))
+        let state = Arc::new(AppStates{item_service,user_service});
+        let response = update_stock(State(state), Json(mock_up))
             .await
             .into_response();
 
@@ -272,9 +288,12 @@ mod tests {
             affected_row: 1,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
-        let response = update_stock(State(service), Json(mock_up))
+        let state = Arc::new(AppStates{item_service,user_service});
+
+        let response = update_stock(State(state), Json(mock_up))
             .await
             .into_response();
 
@@ -290,9 +309,12 @@ mod tests {
             affected_row: 0,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
-        let response = delete_item(State(service), Json(mock_del))
+        let state = Arc::new(AppStates{item_service,user_service});
+
+        let response = delete_item(State(state), Json(mock_del))
             .await
             .into_response();
 
@@ -308,9 +330,11 @@ mod tests {
             affected_row: 1,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
-        let response = delete_item(State(service), Json(mock_del))
+        let state = Arc::new(AppStates{item_service,user_service});
+        let response = delete_item(State(state), Json(mock_del))
             .await
             .into_response();
 
@@ -326,9 +350,12 @@ mod tests {
             affected_row: 1,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
-        let response = delete_item(State(service), Json(mock_del))
+        let state = Arc::new(AppStates{item_service,user_service});
+
+        let response = delete_item(State(state), Json(mock_del))
             .await
             .into_response();
 
@@ -349,13 +376,16 @@ mod tests {
             affected_row: 1,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
+
+        let state = Arc::new(AppStates{item_service,user_service});
 
         let mock_name = SearchParams {
             name: "モック".to_string(),
         };
 
-        let response = find_by_name(State(service), Query(mock_name))
+        let response = find_by_name(State(state), Query(mock_name))
             .await
             .into_response();
 
@@ -378,13 +408,16 @@ mod tests {
             affected_row: 1,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
+
+        let state = Arc::new(AppStates{item_service,user_service});
 
         let mock_name = SearchParams {
             name: "  ".to_string(),
         };
 
-        let response = find_by_name(State(service), Query(mock_name))
+        let response = find_by_name(State(state), Query(mock_name))
             .await
             .into_response();
 
@@ -399,13 +432,15 @@ mod tests {
             affected_row: 1,
         });
 
-        let service = Arc::new(ItemService::new(mock_repo));
+        let item_service = Arc::new(ItemService::new(mock_repo));
+        let user_service = Arc::new(UserService::new(Arc::new(MockUserRepository::default())));
 
+        let state = Arc::new(AppStates{item_service,user_service});
         let mock_name = SearchParams {
             name: "該当なし".to_string(),
         };
 
-        let response = find_by_name(State(service), Query(mock_name))
+        let response = find_by_name(State(state), Query(mock_name))
             .await
             .into_response();
 

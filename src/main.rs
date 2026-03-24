@@ -17,10 +17,7 @@ use sqlx::postgres::PgPoolOptions;
 use std::env;
 use std::sync::Arc;
 
-use axum::{
-    Router,
-    routing::{delete, get, patch, post},
-};
+use axum::Router;
 use tower_http::cors::CorsLayer;
 
 #[tokio::main]
@@ -44,7 +41,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let cors = CorsLayer::permissive();
     let app = Router::new()
-        .nest("auth", handlers::user_handler::auth_routes())
+        .nest("/auth", handlers::user_handler::auth_routes())
+        .nest("/api", handlers::item_handler::auth_routes())
         .with_state(app_states)
         .layer(cors);
 

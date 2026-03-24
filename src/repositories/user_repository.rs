@@ -53,6 +53,7 @@ impl UserRepositoryTrait for UserRepository {
 }
 
 #[cfg(test)]
+#[derive(Default)]
 pub struct MockUserRepository {
     pub users: Vec<User>,
     pub error_type: Option<AppError>,

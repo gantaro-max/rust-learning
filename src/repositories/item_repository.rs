@@ -14,6 +14,7 @@ pub trait ItemRepositoryTrait: Send + Sync {
     async fn find_by_name(&self, name: &str) -> Result<Vec<Item>, AppError>;
 }
 #[cfg(test)]
+#[derive(Default)]
 pub struct MockItemRepository {
     pub items: Vec<Item>,
     pub error_type: Option<AppError>,
@@ -79,7 +80,7 @@ impl ItemRepositoryTrait for ItemRepository {
         let created_item = sqlx::query_as::<_, Item>(
             r#"INSERT INTO items(name,price,stock,category) 
             VALUES($1,$2,$3,$4) 
-            RETURNING id,name,price,stock,category as "category: _""#,
+            RETURNING id,name,price,stock,category"#,
         )
         .bind(&item.name)
         .bind(&item.price)

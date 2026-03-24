@@ -59,7 +59,7 @@ pub async fn find_by_name(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{models::Category, repositories::item_repository::MockRepository};
+    use crate::{models::Category, repositories::item_repository::MockItemRepository};
     use axum::{
         body,
         extract::{Query, State},
@@ -75,7 +75,7 @@ mod tests {
             stock: 100,
             category: Category::DailyNecessity,
         };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![mock_item],
             error_type: None,
             affected_row: 1,
@@ -97,7 +97,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_items_handler_internal_server_error() {
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: Some(AppError::InternalServerError("DB接続エラー".to_string())),
             affected_row: 1,
@@ -119,7 +119,7 @@ mod tests {
             category: Category::DailyNecessity,
         };
 
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 1,
@@ -144,7 +144,7 @@ mod tests {
             category: Category::DailyNecessity,
         };
 
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: Some(AppError::InternalServerError("DB接続エラー".to_string())),
             affected_row: 1,
@@ -169,7 +169,7 @@ mod tests {
             category: Category::DailyNecessity,
         };
 
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 1,
@@ -186,7 +186,7 @@ mod tests {
     #[tokio::test]
     async fn test_update_stock_minus() {
         let mock_up = UpdateStockRequest { id: 1, stock: -1 };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 1,
@@ -204,7 +204,7 @@ mod tests {
     #[tokio::test]
     async fn test_update_stock_notfound() {
         let mock_up = UpdateStockRequest { id: 1, stock: 1 };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 0,
@@ -222,7 +222,7 @@ mod tests {
     #[tokio::test]
     async fn test_update_stock_internal_server_error() {
         let mock_up = UpdateStockRequest { id: 1, stock: 1 };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: Some(AppError::InternalServerError("DB接続エラー".to_string())),
             affected_row: 1,
@@ -240,7 +240,7 @@ mod tests {
     #[tokio::test]
     async fn test_update_stock_internal_ok() {
         let mock_up = UpdateStockRequest { id: 1, stock: 1 };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 1,
@@ -258,7 +258,7 @@ mod tests {
     #[tokio::test]
     async fn test_delete_item_notfound() {
         let mock_del = DeleteRequest { id: 1 };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 0,
@@ -276,7 +276,7 @@ mod tests {
     #[tokio::test]
     async fn test_delete_item_internal_server_error() {
         let mock_del = DeleteRequest { id: 1 };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: Some(AppError::InternalServerError("DB接続エラー".to_string())),
             affected_row: 1,
@@ -294,7 +294,7 @@ mod tests {
     #[tokio::test]
     async fn test_delete_item_ok() {
         let mock_del = DeleteRequest { id: 1 };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 1,
@@ -317,7 +317,7 @@ mod tests {
             stock: 100,
             category: Category::DailyNecessity,
         };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![mock_item],
             error_type: None,
             affected_row: 1,
@@ -346,7 +346,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_find_by_name_badrequest() {
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 1,
@@ -367,7 +367,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_find_by_name_notfound() {
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 1,

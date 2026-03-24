@@ -33,8 +33,8 @@ pub struct DeleteRequest {
 }
 
 #[derive(Debug, Deserialize, FromRow, Clone)]
-pub struct Users {
-    pub id: i32,
+pub struct User {
+    pub id: Option<i32>,
     pub user_id: String,
     pub user_name: String,
     pub password_hash: String,
@@ -49,13 +49,13 @@ pub struct UserRequest {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct UserResponse {
-    pub id: i32,
+    pub id: Option<i32>,
     pub user_id: String,
     pub user_name: String,
 }
 
-impl From<Users> for UserResponse {
-    fn from(user: Users) -> Self {
+impl From<User> for UserResponse {
+    fn from(user: User) -> Self {
         Self {
             id: user.id,
             user_id: user.user_id,

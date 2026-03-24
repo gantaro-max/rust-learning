@@ -3,14 +3,14 @@ use crate::models::{DeleteRequest, Item, UpdateStockRequest};
 use crate::repositories::item_repository::ItemRepositoryTrait;
 use std::sync::Arc;
 pub struct ItemService {
-    repository: Arc<dyn ItemRepositoryTrait>,
+    item_repository: Arc<dyn ItemRepositoryTrait>,
 }
 impl ItemService {
-    pub fn new(repository: Arc<dyn ItemRepositoryTrait>) -> Self {
-        Self { repository }
+    pub fn new(item_repository: Arc<dyn ItemRepositoryTrait>) -> Self {
+        Self { item_repository }
     }
     pub async fn get_items(&self) -> Result<Vec<Item>, AppError> {
-        let items = self.repository.fetch_all().await?;
+        let items = self.item_repository.fetch_all().await?;
 
         Ok(items)
     }
@@ -22,7 +22,7 @@ impl ItemService {
             return Err(AppError::BadRequest("価格は1円以上にしてください".into()));
         }
 
-        let created_item = self.repository.create(new_item).await?;
+        let created_item = self.item_repository.create(new_item).await?;
 
         Ok(created_item)
     }
@@ -31,7 +31,7 @@ impl ItemService {
         if up_req.stock < 0 {
             return Err(AppError::BadRequest("在庫数は0以上にしてください".into()));
         }
-        let rows = self.repository.update_stock(&up_req).await?;
+        let rows = self.item_repository.update_stock(&up_req).await?;
 
         if rows == 0 {
             return Err(AppError::NotFound);
@@ -41,7 +41,7 @@ impl ItemService {
     }
 
     pub async fn delete_item(&self, del_req: &DeleteRequest) -> Result<u64, AppError> {
-        let rows = self.repository.delete(&del_req).await?;
+        let rows = self.item_repository.delete(&del_req).await?;
 
         if rows == 0 {
             return Err(AppError::NotFound);
@@ -57,7 +57,7 @@ impl ItemService {
             ));
         }
 
-        let items = self.repository.find_by_name(name).await?;
+        let items = self.item_repository.find_by_name(name).await?;
         if items.is_empty() {
             return Err(AppError::NotFound);
         }
@@ -70,7 +70,7 @@ impl ItemService {
 mod tests {
     use super::*;
     use crate::models::{Category, DeleteRequest, Item, UpdateStockRequest};
-    use crate::repositories::item_repository::MockRepository;
+    use crate::repositories::item_repository::MockItemRepository;
     use std::error::Error;
 
     #[tokio::test]
@@ -83,7 +83,7 @@ mod tests {
             category: Category::Fruit,
         };
 
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![mock_item.clone()],
             error_type: None,
             affected_row: 1,
@@ -110,7 +110,7 @@ mod tests {
             category: Category::Fruit,
         };
 
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 1,
@@ -128,7 +128,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_items_db_error() {
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: Some(AppError::InternalServerError("DB接続エラー".into())),
             affected_row: 1,
@@ -148,7 +148,7 @@ mod tests {
     async fn test_update_stock_ok() -> Result<(), Box<dyn Error>> {
         let mock_up = UpdateStockRequest { id: 1, stock: 10 };
 
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 1,
@@ -165,7 +165,7 @@ mod tests {
     #[tokio::test]
     async fn test_update_stock_minus() {
         let mock_up = UpdateStockRequest { id: 1, stock: -1 };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 1,
@@ -184,7 +184,7 @@ mod tests {
     #[tokio::test]
     async fn test_update_stock_notfound() {
         let mock_up = UpdateStockRequest { id: 1, stock: 1 };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 0,
@@ -201,7 +201,7 @@ mod tests {
     #[tokio::test]
     async fn test_delete_notfound() {
         let mock_del = DeleteRequest { id: 1 };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 0,
@@ -226,7 +226,7 @@ mod tests {
             stock: 10,
             category: Category::Fruit,
         };
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![mock_item],
             error_type: None,
             affected_row: 1,
@@ -242,7 +242,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_find_by_name_notfound() {
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: Some(AppError::NotFound),
             affected_row: 1,
@@ -260,7 +260,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_find_by_name_empty() {
-        let mock_repo = Arc::new(MockRepository {
+        let mock_repo = Arc::new(MockItemRepository {
             items: vec![],
             error_type: None,
             affected_row: 1,

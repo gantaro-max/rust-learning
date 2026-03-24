@@ -3,7 +3,6 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-
 use serde_json::json;
 use thiserror::Error;
 
@@ -15,6 +14,8 @@ pub enum AppError {
     NotFound,
     #[error("サーバー内部で予期せぬエラーが発生しました：{0}")]
     InternalServerError(String),
+    #[error("ログインに失敗しました")]
+    Unauthorized(String),
 }
 
 impl IntoResponse for AppError {
@@ -22,6 +23,7 @@ impl IntoResponse for AppError {
         let (status, message) = match self {
             Self::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             Self::NotFound => (StatusCode::NOT_FOUND, "Resource not found".to_string()),
+            Self::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, msg),
             Self::InternalServerError(error) => {
                 eprintln!("ログ：{}", error);
                 (

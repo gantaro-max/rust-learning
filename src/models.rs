@@ -63,3 +63,14 @@ impl From<User> for UserResponse {
         }
     }
 }
+#[derive(Debug, Serialize)]
+pub struct LoginResponse {
+    pub user_res: UserResponse,
+    pub token: String,
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Claims {
+    pub subject: String,
+    pub issued_at: usize,
+    pub exp_time: usize,
+}

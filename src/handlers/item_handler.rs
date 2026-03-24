@@ -3,7 +3,14 @@ use crate::models::DeleteRequest;
 use crate::models::Item;
 use crate::models::UpdateStockRequest;
 use crate::services::item_service::ItemService;
-use axum::{Json, extract::Query, extract::State, http::StatusCode};
+use crate::state::AppStates;
+use axum::{
+    Json, Router,
+    extract::Query,
+    extract::State,
+    http::StatusCode,
+    routing::{delete, get, patch, post},
+};
 use serde::Deserialize;
 use std::sync::Arc;
 
@@ -12,46 +19,53 @@ pub struct SearchParams {
     pub name: String,
 }
 
-pub async fn get_items(
-    State(service): State<Arc<ItemService>>,
-) -> Result<Json<Vec<Item>>, AppError> {
-    let items = service.get_items().await?;
+pub fn auth_routes() -> Router<Arc<AppStates>> {
+    Router::new()
+        .route("/items", get(get_items))
+        .route("/items", post(add_items))
+        .route("/items", patch(update_stock))
+        .route("/items", delete(delete_item))
+        .route("/items/search", get(find_by_name))
+}
+
+pub async fn get_items(State(state): State<Arc<AppStates>>) -> Result<Json<Vec<Item>>, AppError> {
+    let items = state.item_service.get_items().await?;
 
     Ok(Json(items))
 }
 
 pub async fn add_items(
-    State(service): State<Arc<ItemService>>,
+    State(state): State<Arc<AppStates>>,
     Json(new_item): Json<Item>,
 ) -> Result<(StatusCode, Json<Item>), AppError> {
-    let created_item = service.add_items(new_item).await?;
+    let created_item = state.item_service.add_items(new_item).await?;
 
     Ok((StatusCode::CREATED, Json(created_item)))
 }
 
 pub async fn update_stock(
-    State(service): State<Arc<ItemService>>,
+    State(state): State<Arc<AppStates>>,
     Json(up_req): Json<UpdateStockRequest>,
 ) -> Result<StatusCode, AppError> {
-    service.update_stock(&up_req).await?;
+    state.item_service.update_stock(&up_req).await?;
 
     Ok(StatusCode::OK)
 }
 
 pub async fn delete_item(
-    State(service): State<Arc<ItemService>>,
+    State(state): State<Arc<AppStates>>,
     Json(del_req): Json<DeleteRequest>,
 ) -> Result<StatusCode, AppError> {
-    service.delete_item(&del_req).await?;
+    state.item_service.delete_item(&del_req).await?;
 
     Ok(StatusCode::OK)
 }
 
 pub async fn find_by_name(
-    State(service): State<Arc<ItemService>>,
+    State(state): State<Arc<AppStates>>,
     Query(params): Query<SearchParams>,
 ) -> Result<Json<Vec<Item>>, AppError> {
-    let items = service.find_by_name(&params.name).await?;
+    let items = state.item_service.find_by_name(&params.name).await?;
 
     Ok(Json(items))
 }
@@ -59,7 +73,12 @@ pub async fn find_by_name(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{models::Category, repositories::item_repository::MockItemRepository};
+    use crate::{
+        models::Category,
+        repositories::{item_repository::MockItemRepository, user_repository::MockUserRepository},
+        services::user_service::UserService,
+        state::AppStates,
+    };
     use axum::{
         body,
         extract::{Query, State},
@@ -81,8 +100,15 @@ mod tests {
             affected_row: 1,
         });
         let service = Arc::new(ItemService::new(mock_repo));
+        let state = AppStates {
+            item_service: service,
+            user_service: Arc::new(UserService::new(Arc::new(MockUserRepository {
+                users: vec![],
+                error_type: None,
+            }))),
+        };
 
-        let response = get_items(State(service)).await.into_response();
+        let response = get_items(State(state)).await.into_response();
 
         assert_eq!(response.status(), StatusCode::OK);
 

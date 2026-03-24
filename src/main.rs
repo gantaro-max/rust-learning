@@ -4,8 +4,13 @@ mod handlers;
 mod models;
 mod repositories;
 mod services;
-use crate::repositories::item_repository::ItemRepositoryTrait;
+mod state;
+use crate::repositories::user_repository::{UserRepository, UserRepositoryTrait};
 use crate::services::item_service::ItemService;
+use crate::state::AppStates;
+use crate::{
+    repositories::item_repository::ItemRepositoryTrait, services::user_service::UserService,
+};
 use dotenvy::dotenv;
 use repositories::item_repository::ItemRepository;
 use sqlx::postgres::PgPoolOptions;
@@ -30,19 +35,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     sqlx::migrate!("./migrations").run(&pool).await?;
 
-    let repository: Arc<dyn ItemRepositoryTrait> = Arc::new(ItemRepository::new(pool));
-    let service = Arc::new(ItemService::new(Arc::clone(&repository)));
+    let item_repo: Arc<dyn ItemRepositoryTrait> = Arc::new(ItemRepository::new(pool.clone()));
+    let user_repo: Arc<dyn UserRepositoryTrait> = Arc::new(UserRepository::new(pool));
+    let app_states = Arc::new(AppStates {
+        item_service: Arc::new(ItemService::new(item_repo)),
+        user_service: Arc::new(UserService::new(user_repo)),
+    });
+
     let cors = CorsLayer::permissive();
     let app = Router::new()
-        .route("/api/items", get(handlers::item_handler::get_items))
-        .route("/api/items", post(handlers::item_handler::add_items))
-        .route("/api/items", patch(handlers::item_handler::update_stock))
-        .route("/api/items", delete(handlers::item_handler::delete_item))
-        .route(
-            "/api/items/search",
-            get(handlers::item_handler::find_by_name),
-        )
-        .with_state(service)
+        .nest("auth", handlers::user_handler::auth_routes())
+        .with_state(app_states)
         .layer(cors);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();

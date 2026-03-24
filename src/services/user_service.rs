@@ -1,7 +1,7 @@
 use crate::{
     auth,
     error::AppError,
-    models::{User, UserRequest, UserResponse},
+    models::{LoginResponse, User, UserRequest, UserResponse},
     repositories::user_repository::UserRepositoryTrait,
 };
 use std::sync::Arc;
@@ -33,5 +33,25 @@ impl UserService {
         let created = self.user_repository.create_user(new_user).await?;
 
         Ok(created.into())
+    }
+
+    pub async fn log_in(&self, user_req: UserRequest) -> Result<LoginResponse, AppError> {
+        let user = self
+            .user_repository
+            .find_by_user_id(user_req.user_id)
+            .await?
+            .ok_or_else(|| AppError::Unauthorized("IDまたはパスワードが違います".to_string()))?;
+
+        if !auth::verify_password(&user_req.password, &user.password_hash)? {
+            return Err(AppError::Unauthorized(
+                "IDまたはパスワードが違います".to_string(),
+            ));
+        }
+        let create_token = auth::create_jwt(&user.user_id)?;
+        let login_res = LoginResponse {
+            user_res: user.into(),
+            token: create_token,
+        };
+        Ok(login_res)
     }
 }

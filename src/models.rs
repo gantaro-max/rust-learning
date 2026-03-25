@@ -74,3 +74,8 @@ pub struct Claims {
     pub issued_at: usize,
     pub exp_time: usize,
 }
+#[derive(Debug,Deserialize)]
+pub struct LoginRequest {
+    pub user_id: String,
+    pub password: String,
+}

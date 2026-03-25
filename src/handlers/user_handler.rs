@@ -8,7 +8,7 @@ use axum::{
 
 use crate::{
     error::AppError,
-    models::{LoginResponse, UserRequest, UserResponse},
+    models::{LoginRequest, LoginResponse, UserRequest, UserResponse},
     state::AppStates,
 };
 
@@ -24,7 +24,7 @@ pub fn admin_routes() -> Router<Arc<AppStates>> {
 
 pub async fn log_in(
     State(state): State<Arc<AppStates>>,
-    Json(user_req): Json<UserRequest>,
+    Json(user_req): Json<LoginRequest>,
 ) -> Result<Json<LoginResponse>, AppError> {
     let login_user = state.user_service.log_in(user_req).await?;
 

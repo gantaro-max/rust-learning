@@ -1,7 +1,7 @@
 use crate::{
     auth,
     error::AppError,
-    models::{LoginResponse, User, UserRequest, UserResponse},
+    models::{LoginRequest, LoginResponse, User, UserRequest, UserResponse},
     repositories::user_repository::UserRepositoryTrait,
 };
 use std::sync::Arc;
@@ -35,7 +35,7 @@ impl UserService {
         Ok(created.into())
     }
 
-    pub async fn log_in(&self, user_req: UserRequest) -> Result<LoginResponse, AppError> {
+    pub async fn log_in(&self, user_req: LoginRequest) -> Result<LoginResponse, AppError> {
         let user = self
             .user_repository
             .find_by_user_id(user_req.user_id)

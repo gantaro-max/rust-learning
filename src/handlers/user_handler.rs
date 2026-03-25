@@ -1,6 +1,10 @@
 use std::sync::Arc;
 
-use axum::{Json, Router, extract::State, routing::post};
+use axum::{
+    Json, Router,
+    extract::State,
+    routing::{get, post},
+};
 
 use crate::{
     error::AppError,
@@ -8,10 +12,14 @@ use crate::{
     state::AppStates,
 };
 
-pub fn auth_routes() -> Router<Arc<AppStates>> {
+pub fn user_routes() -> Router<Arc<AppStates>> {
     Router::new()
         .route("/login", post(log_in))
         .route("/signup", post(create_user))
+}
+
+pub fn admin_routes() -> Router<Arc<AppStates>> {
+    Router::new().route("/users", get(get_all_users))
 }
 
 pub async fn log_in(
@@ -30,4 +38,11 @@ pub async fn create_user(
     let user = state.user_service.create_user(user_req).await?;
 
     Ok(Json(user))
+}
+pub async fn get_all_users(
+    State(state): State<Arc<AppStates>>,
+) -> Result<Json<Vec<UserResponse>>, AppError> {
+    let users = state.user_service.get_all_users().await?;
+
+    Ok(Json(users))
 }

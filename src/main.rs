@@ -41,8 +41,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let cors = CorsLayer::permissive();
     let app = Router::new()
-        .nest("/auth", handlers::user_handler::auth_routes())
-        .nest("/api", handlers::item_handler::auth_routes())
+        .nest("/auth", handlers::user_handler::user_routes())
+        .nest("/api", handlers::item_handler::item_routes())
+        .nest("/admin", handlers::user_handler::admin_routes())
         .with_state(app_states)
         .layer(cors);
 

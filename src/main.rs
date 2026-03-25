@@ -47,8 +47,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_state(app_states)
         .layer(cors);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:8000").await.unwrap();
-    println!("🚀 Webサーバーがポート8000で起動しました! http://localhost:8000");
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8008").await.unwrap();
+    println!("🚀 Webサーバーがポート8000で起動しました! http://localhost:8008");
 
     axum::serve(listener, app).await.unwrap();
     Ok(())

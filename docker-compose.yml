@@ -25,7 +25,7 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "8008:8008"
     environment:
       DATABASE_URL: postgres://postgres:password@db:5432/postgres
     depends_on:
